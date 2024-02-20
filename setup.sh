@@ -44,6 +44,9 @@ install_zsh_nala() {
     apt-get install -y zsh wget curl git
     sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
+    # Source the zshrc file to apply the changes
+    source ~/.zshrc
+
     # Install "powerlevel10k/powerlevel10k" theme
     # Remeber to install fonts "MesloLGS NF"
     # https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
@@ -206,7 +209,7 @@ common_packages_install() {
     echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | tee /etc/apt/sources.list.d/gierens.list
     chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
     nala update
-    nala install -y eza net-tools htop nala-transport-https ca-certificates software-properties-common build-essential libelf-dev bashtop openssh-server
+    nala install -y eza net-tools htop ca-certificates software-properties-common build-essential libelf-dev openssh-server
 
 
     # Docker and Docker Compose
