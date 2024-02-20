@@ -3,6 +3,15 @@
 # Setup script for macOS oh-my-zsh
 # Copyright (C) 2019-2024 ZL Asica
 
+
+
+# BUGS
+# 1. .zshrc替换
+#     a. 替换oh my zsh安装后的
+#     b. 删除下面的echo添加语句
+#     c. 更改默认编辑器为nano
+# 2. 字体安装问题：让用户自己安装，无法自动安装
+
 # Define color codes for output
 red=$(tput setaf 1)  # Error messages
 green=$(tput setaf 2)  # Success messages
@@ -33,45 +42,46 @@ font_install() {
     echo -e "${magenta}Installing fonts...${plain}"
     echo -e "${divider}"
 
-    # Check if MesloLGS NF is already installed
-    if [ -f ~/Library/Fonts/MesloLGS\ NF\ Regular.ttf ]; then
-        echo -e "${green}[+] MesloLGS NF Regular is already installed.${plain}"
-    else
-        # Fonts' urls
-        FONT_URLS=(
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
-            "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
-        )
+    # Fonts' urls
+    FONT_URLS=(
+        "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+        "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
+        "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
+        "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
+    )
 
-        # jsDelivr CDN
-        FONT_URLS_MIRROR=(
-            "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Regular.ttf"
-            "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Bold.ttf"
-            "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Italic.ttf"
-            "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Bold%20Italic.ttf"
-        )
+    # jsDelivr CDN
+    FONT_URLS_MIRROR=(
+        "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Regular.ttf"
+        "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Bold.ttf"
+        "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Italic.ttf"
+        "https://cdn.jsdelivr.net/gh/romkatv/powerlevel10k-media/MesloLGS%20NF%20Bold%20Italic.ttf"
+    )
 
-        # Fonts install path
-        FONT_DIR="$HOME/Library/Fonts"
+    # Fonts install path
+    FONT_DIR="$HOME/Library/Fonts"
 
-        # Create the directory if it doesn't exist
-        if [ ! -d "$FONT_DIR" ]; then
-            mkdir -p "$FONT_DIR"
-        fi
+    # Create the directory if it doesn't exist
+    if [ ! -d "$FONT_DIR" ]; then
+        mkdir -p "$FONT_DIR"
+    fi
 
-        # Download and install the fonts
-        if [[ "$country" == "CN" ]] || [[ "$country" == "IN" ]] || [[ "$country" == "RU" ]]; then
-            FONT_URLS=("${FONT_URLS_MIRROR[@]}")
-        fi
+    # Download and install the fonts
+    if [[ "$country" == "CN" ]] || [[ "$country" == "IN" ]] || [[ "$country" == "RU" ]]; then
+        FONT_URLS=("${FONT_URLS_MIRROR[@]}")
+    fi
 
-        # Use for loop to download and install fonts
-        for font_url in "${FONT_URLS[@]}"; do
-            # Get the font file name
-            font_file=$(basename "$font_url")
+    # Use for loop to download and install fonts
+    for font_url in "${FONT_URLS[@]}"; do
+        # Get the font file name(removing %20 and replacing with space)
+        font_file=$(echo $font_url | awk -F'/' '{print $NF}' | sed 's/%20/ /g')
+
+        # Check if is already installed
+        if [ -f "$FONT_DIR/$font_file" ]; then
+            echo -e "${green}[+] $font_file is already installed.${plain}"
+        else
             # Download the font
-            curl -s -o "$FONT_DIR/$font_file" "$font_url"
+            curl -o "$FONT_DIR/$font_file" -fsSL "$font_url"
             # Check if the font was downloaded successfully
             if [ -f "$FONT_DIR/$font_file" ]; then
                 echo -e "${green}[+] Successfully installed $font_file.${plain}"
@@ -79,8 +89,8 @@ font_install() {
                 echo -e "${red}[-] Failed to install $font_file.${plain}"
                 error_exit "font_install"
             fi
-        done
-    fi
+        fi
+    done
 }
 
 
@@ -145,11 +155,10 @@ install_theme_powerlevel10k() {
         # Install Powerlevel10k theme
         # Install "powerlevel10k/powerlevel10k" theme
         # Remeber to install fonts "MesloLGS NF"
-        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-        echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
 
         # Get theme setting from preset
-        curl -o ~/.p10k.zsh https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/.p10k.zsh
+        curl -o ~/.p10k.zsh https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/zsh/.p10k.zsh
 
         # Check file exist
         if [ -f ~/.p10k.zsh ]; then
@@ -161,21 +170,6 @@ install_theme_powerlevel10k() {
     fi
 }
 
-default_editor() {
-    echo -e "${divider}"
-    echo -e "${magenta}Setting default editor to nano...${plain}"
-    echo -e "${divider}"
-
-    # Set Sublime Text as the default editor
-    if [ -f /Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl ]; then
-        # Save change to .zshrc
-        echo "export EDITOR='subl -w'" >> ~/.zshrc
-        echo -e "${green}[+] Successfully set Sublime Text as the default editor.${plain}"
-    else
-        echo "export EDITOR='nano'" >> ~/.zshrc
-        echo -e "${green}[+] Successfully set nano as the default editor.${plain}"
-    fi
-}
 
 install_plugins() {
     echo -e "${divider}"
@@ -226,29 +220,23 @@ install_plugins() {
             error_exit "install_plugins"
         fi
     fi
+}
 
-    # Check whether plugin list is already modified
-    if grep -q "zsh-autosuggestions" ~/.zshrc && grep -q "zsh-syntax-highlighting" ~/.zshrc; then
-        echo -e "${green}[+] Plugin list is already modified.${plain}"
+
+switch_zshrc() {
+    echo -e "${divider}"
+    echo -e "${magenta}Switching .zshrc...${plain}"
+    echo -e "${divider}"
+
+    # Backup the default .zshrc
+    if [ -f ~/.zshrc ]; then
+        mv ~/.zshrc ~/.zshrc.bak
+        # Replace the default .zshrc with the custom .zshrc
+        curl -o ~/.zshrc https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/zsh/.zshrc
+        echo -e "${green}[+] Successfully switched .zshrc.${plain}"
     else
-        # Add zsh-autosuggestions and zsh-syntax-highlighting to the plugin list
-        sed -i '' '/^plugins=(/,/)/c\
-        plugins=(\
-          git\
-          command-not-found\
-          cp\
-          extract\
-          gitignore\
-          safe-paste\
-          zsh-autosuggestions\
-          zsh-syntax-highlighting\
-        )' ~/.zshrc
-        if [ $? -eq 0 ]; then
-            echo -e "${green}[+] Successfully added zsh-autosuggestions and zsh-syntax-highlighting to the plugin list.${plain}"
-        else
-            echo -e "${red}[-] Failed to add zsh-autosuggestions and zsh-syntax-highlighting to the plugin list.${plain}"
-            error_exit "install_plugins"
-        fi
+        echo -e "${red}[-] Failed to switch .zshrc.${plain}"
+        error_exit "switch_zshrc"
     fi
 }
 
@@ -266,6 +254,8 @@ ending_info() {
     echo -e "${magenta}${divider}${plain}"
     echo -e "${green}Please restart your terminal to see the changes.${plain}"
     echo -e "${green}Or you can run 'source ~/.zshrc' to apply the changes without restarting.${plain}"
+    echo -e "${green}If you previously have a .zshrc file, it will be replaced by the custom .zshrc file. Your original .zshrc file will be backed up as .zshrc.bak.${plain}"
+    echo -e "${green}Remember to add your own configurations to the new .zshrc file.${plain}"
     echo -e "${magenta}${divider}${plain}"
     echo -e "${green}If this helped you, please consider giving it a star on GitHub!${plain}"
     echo -e "${green}https://github.com/ZL-Asica/server-setup-scripts${plain}"
@@ -299,6 +289,7 @@ main() {
     install_theme_powerlevel10k
     default_editor
     install_plugins
+    switch_zshrc
     ending_info
 }
 
