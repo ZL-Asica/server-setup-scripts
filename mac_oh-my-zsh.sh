@@ -149,8 +149,8 @@ install_theme_powerlevel10k() {
         echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
 
         # Get theme setting from preset
-        wget -O ~/.p10k.zsh https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/.p10k.zsh
-        
+        curl -o ~/.p10k.zsh https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/.p10k.zsh
+
         # Check file exist
         if [ -f ~/.p10k.zsh ]; then
             echo -e "${green}[+] Successfully installed Powerlevel10k theme.${plain}"
