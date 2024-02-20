@@ -66,17 +66,20 @@ font_install() {
             FONT_URLS=("${FONT_URLS_MIRROR[@]}")
         fi
 
-        for url in "${FONT_URLS[@]}"; do
-            curl -fsSL -o "$FONT_DIR/$(basename "$url")" "$url"
+        # Use for loop to download and install fonts
+        for font_url in "${FONT_URLS[@]}"; do
+            # Get the font file name
+            font_file=$(basename "$font_url")
+            # Download the font
+            curl -s -o "$FONT_DIR/$font_file" "$font_url"
+            # Check if the font was downloaded successfully
+            if [ -f "$FONT_DIR/$font_file" ]; then
+                echo -e "${green}[+] Successfully installed $font_file.${plain}"
+            else
+                echo -e "${red}[-] Failed to install $font_file.${plain}"
+                error_exit "font_install"
+            fi
         done
-
-        # check again
-        if [ -f ~/Library/Fonts/MesloLGS\ NF\ Regular.ttf ]; then
-            echo -e "${green}[+] Successfully installed MesloLGS NF fonts.${plain}"
-        else
-            echo -e "${red}[-] Failed to install MesloLGS NF fonts.${plain}"
-            error_exit "font_install"
-        fi
     fi
 }
 
@@ -278,7 +281,7 @@ main() {
     echo -e "${divider}"
     echo -e "${cyan}This script will install oh-my-zsh, Powerlevel10k theme, and some useful plugins.${plain}"
     echo -e "${cyan}It will also change the default shell to zsh and set sublime(or nano if sublime not installed) as the default editor.${plain}"
-    echo -e "${cyan}I you not install the font 'MesloLGS NF', it will install it for you.${plain}"
+    echo -e "${cyan}It will also set LF for git newline and eol.${plain}"
 
     read -p "$(echo -e ${blue}"Do you want to continue? (y/n)${plain}")" -n 1 -r
     echo ""
