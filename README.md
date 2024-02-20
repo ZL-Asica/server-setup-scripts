@@ -20,10 +20,10 @@ Use **wget**
 sudo bash -c "$(wget -O- https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/setup.sh)"
 ```
 
-## macOS oh-my-zsh
+## macOS oh-my-zsh (Please do not use root/sudo)
 
 Use **curl**
 
 ```bash
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_oh-my-zsh.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_oh-my-zsh.sh)"
 ```
