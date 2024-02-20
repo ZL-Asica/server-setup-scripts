@@ -49,10 +49,6 @@ install_zsh_nala() {
 
     # Install "powerlevel10k/powerlevel10k" theme
     # Remeber to install fonts "MesloLGS NF"
-    # https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
-    # https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf
-    # https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf
-    # https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
     echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
     # Get theme setting from preset
@@ -64,26 +60,22 @@ install_zsh_nala() {
     update-alternatives --install /usr/bin/editor editor /usr/bin/nano 100
     update-alternatives --set editor /usr/bin/nano
 
-    ZSH_CUSTOM="${HOME}/.oh-my-zsh/custom"
+    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
-    # Install zsh plugins
-    # zsh-syntax-highlighting
-    if [ ! -d "${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting" ]; then
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting
-    fi
-    # zsh-autosuggestions
-    if [ ! -d "${ZSH_CUSTOM}/plugins/zsh-autosuggestions" ]; then
-        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM}/plugins/zsh-autosuggestions
-    fi
-
-    # Add the plugins to the zshrc file
-    if ! grep -q "zsh-syntax-highlighting" ~/.zshrc; then
-        echo "source ${ZSH_CUSTOM}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" >>~/.zshrc
-    fi
-
-    if ! grep -q "zsh-autosuggestions" ~/.zshrc; then
-        echo "source ${ZSH_CUSTOM}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" >>~/.zshrc
-    fi
+    # Active Plugins
+    NEW_PLUGINS="plugins=(\
+      git\
+      command-not-found\
+      cp\
+      extract\
+      gitignore\
+      safe-paste\
+      zsh-autosuggestions\
+      zsh-syntax-highlighting\
+    )"
+    sed -i '' '/^plugins=(/,/)/c\
+    '"$NEW_PLUGINS"'' ~/.zshrc
 
     # Source the zshrc file to apply the changes
     source ~/.zshrc
@@ -292,6 +284,12 @@ ending_info() {
     echo -e "${green}Remember to put your public key in ~/.ssh/authorized_keys in this server${plain}"
     echo -e "${magena}Use Nala to install packages and manage your server${plain}"
     echo -e "${magena}${divider}${plain}"
+    echo -e "${magena}Remeber to install fonts ‘MesloLGS NF’ if you not installed yet or the terminal seems wired."
+    echo -e "${cyan}https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+    echo -e "${cyan}https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
+    echo -e "${cyan}https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
+    echo -e "${cyan}https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
+    echo -e "${magena}${divider}${plain}"
     echo -e "${green}If this helped you, please consider giving it a star on GitHub!${plain}"
     echo -e "${green}https://github.com/ZL-Asica/server-setup-scripts${plain}"
 }
@@ -355,9 +353,9 @@ printf '\033c'
 # Ensure the script is run as root
 [[ $EUID -ne 0 ]] && error_exit "error_root"
 
-# Select language
+# Welcome message
 echo "" # New line for better readability
-echo -e "${pink}"
+echo -e "${magenta}"
 cat << "EOF"
  ______          _        _           
 |__  / |        / \   ___(_) ___ __ _ 
@@ -367,6 +365,5 @@ cat << "EOF"
 
 EOF
 
-EOF
-echo -e "${pink}Server setup script (basic) - ZL Asica\n"
+echo -e "${magenta}Server setup script (basic) - ZL Asica\n"
 echo -e "https://github.com/ZL-Asica/server-setup-scripts${plain}\n" # Default welcome message
