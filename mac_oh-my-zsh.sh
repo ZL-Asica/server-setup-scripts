@@ -118,9 +118,9 @@ install_oh_my_zsh() {
         # if user is in China mainland, India, or Russia, use the mirror site
         if [[ "$country" == "CN" ]] || [[ "$country" == "IN" ]] || [[ "$country" == "RU" ]]; then
             echo -e "${cyan}[-] You are in $country, using mirror site to download oh-my-zsh.${plain}"
-            sh -c "$(curl -fsSL https://install.ohmyz.sh/)"
+            sh -c "$(curl -fsSL https://install.ohmyz.sh/)" "" --unattended
         else
-            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
         fi
 
         # Install oh-my-zsh
