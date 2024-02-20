@@ -19,3 +19,11 @@ Use **wget**
 ```bash
 sudo bash -c "$(wget -O- https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/setup.sh)"
 ```
+
+## macOS oh-my-zsh
+
+Use **curl**
+
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_oh-my-zsh.sh)"
+```

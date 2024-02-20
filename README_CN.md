@@ -21,3 +21,11 @@ sudo bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scr
 ```bash
 sudo bash -c "$(wget -O- https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/setup.sh)"
 ```
+
+## macOS oh-my-zsh
+
+使用 **curl**
+
+```bash
+sudo bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/mac_oh-my-zsh.sh)"
+```
