@@ -58,9 +58,9 @@ install_zsh_nala() {
         # if user is in China mainland, India, or Russia, use the mirror site
         if [[ "$country" == "CN" ]] || [[ "$country" == "IN" ]] || [[ "$country" == "RU" ]]; then
             echo -e "${cyan}[-] You are in $country, using mirror site to download oh-my-zsh.${plain}"
-            sh -c "$(curl -fsSL https://install.ohmyz.sh/)" "" --unattended
+            sh -c "$(curl -fsSL --retry 5 https://install.ohmyz.sh/)" "" --unattended
         else
-            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+            sh -c "$(curl -fsSL --retry 5 https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
         fi
 
         # Install oh-my-zsh
@@ -221,19 +221,19 @@ securities_settings() {
     # Install and setup UFW
     nala install -y ufw
     # Deny all other incoming traffic
-    ufw default deny incoming
+    sudo ufw default deny incoming
     # Allow all outgoing traffic
-    ufw default allow outgoing
+    sudo ufw default allow outgoing
     # Allow SSH
-    ufw allow OpenSSH
+    sudo ufw allow OpenSSH
     # Allow 80, 443
-    ufw allow 80 comment 'HTTP'
-    ufw allow 443 comment 'HTTPS'
-    echo -e "${Cyan}[+]Allowing ports${plain} 22, 80, 443\n${Cyan}Denying all other incoming traffic${plain}"
+    sudo ufw allow 80 comment 'HTTP'
+    sudo ufw allow 443 comment 'HTTPS'
+    echo -e "${cyan}[+]Allowing ports${plain} 22, 80, 443\n${cyan}Denying all other incoming traffic${plain}"
     # Ask user whether disable ipv6 for UFW
-    close_ipv6 = "n"
+    close_ipv6="n"
     read -p "${blue}Do you want to disable ipv6 for UFW? (y/n) - default no: ${plain}" close_ipv6
-    if [ "$close_ipv6".lower() == "y" ]; then
+    if [ "${close_ipv6,,}" == "y" ]; then
         echo -e "${cyan}[+]Closing ipv6 in ufw${plain}"
         echo "IPV6=no" | sudo tee -a /etc/default/ufw
     else
@@ -248,15 +248,20 @@ securities_settings() {
         else
             # Set comment for the port
             read -p "${blue}Comment for the port: ${plain}" comment
-            ufw allow $port comment $comment
+            sudo ufw allow $port comment $comment
         fi
     done
     # Allow whitelisted IPs (current ssh connection ip)
-    ufw allow from $SSH_CONNECTION
+    client_ip=$(echo $SSH_CONNECTION | awk '{ print $1 }')
+    sudo ufw allow from $client_ip
     # Set UFW to start on boot
-    systemctl enable ufw
+    sudo systemctl enable ufw
     # Enable UFW logging
-    ufw logging on
+    sudo ufw logging on
+
+    # Enable UFW
+    echo -e "${cyan}[+]Enabling UFW${plain}"
+    sudo ufw enable
 
 
     # Setup Security Updates
@@ -293,7 +298,7 @@ common_packages_install() {
 
 
     # Docker and Docker Compose
-    if [ "$install_docker".lower() == "y" ]; then
+    if [ "${install_docker,,}" == "y" ]; then
         echo -e "${cyan}[+] Installing Docker and Docker Compose${plain}"
         if [ "$ID" == "debian" ]; then
             for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do apt-get remove $pkg; done
@@ -334,14 +339,21 @@ openssh_settings() {
     ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key < /dev/null
     ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_rsa_key < /dev/null
 
-    # Set system only can access by SSH keys, disable password login
-    echo -e "${cyan}[+] Disabling password authentication for SSH${plain}"
-    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
-    # Check if the line is already commented out
-    if grep -q "PasswordAuthentication no" /etc/ssh/sshd_config; then
-        echo -e "${green}[+] Password authentication for SSH is already disabled${plain}"
+    # ask user to disable password authentication
+    disable_password_auth="n"
+    read -p "${blue}Do you want to disable password authentication for SSH? (y/n) - default no: ${plain}" disable_password_auth
+
+    if [ "${disable_password_auth,,}" == "y" ]; then
+        echo -e "${cyan}[+] Disabling password authentication for SSH${plain}"
+        sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+        # Check if the line is already commented out
+        if grep -q "PasswordAuthentication no" /etc/ssh/sshd_config; then
+            echo -e "${green}[+] Password authentication for SSH is already disabled${plain}"
+        else
+            echo -e "${red}[-] Failed to disable password authentication for SSH${plain}"
+        fi
     else
-        echo -e "${red}[-] Failed to disable password authentication for SSH${plain}"
+        echo -e "${cyan}[+] Keeping password authentication for SSH${plain}"
     fi
 
     # Set the correct permissions for the SSH keys
@@ -350,6 +362,8 @@ openssh_settings() {
     chmod 644 /etc/ssh/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_rsa_key.pub
     # Restart the SSH service to apply the changes
     systemctl restart ssh
+    # Reload ufw to apply the changes
+    sudo ufw reload
 
 
     echo -e "${cyan}[+] SSH keys have been generated${plain}"
@@ -370,7 +384,7 @@ openssh_settings() {
     echo -e "${divider}"
     echo -e "${cyan}\n\nUse this command to directly copy the public key to the server${plain}"
     echo -e "${green}cat ~/.ssh/id_ed25519.pub | ssh user@hostname \"mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys\"${plain}"
-    echo -r "${magena}Remember to replace user@hostname with your username and hostname (or IP address)${plain}"
+    echo -e "${magena}Remember to replace user@hostname with your username and hostname (or IP address)${plain}"
     echo -e "${cyan}You can now connect to the server using SSH.${plain}"
 }
 
@@ -417,7 +431,7 @@ main() {
     echo -e "We will also install the powerlevel10k theme, and the zsh-syntax-highlighting and zsh-autosuggestions plugins."
     echo -e "We will set the default editor to nano."
     read -p "Install zsh and Nala? (y/n) - must install otherwise Nala will not work: ${plain}" install_zsh_prompt
-    if [ "$install_zsh_prompt".lower() == "y" ]; then
+    if [ "${install_zsh_prompt,,}" == "y" ]; then
         install_zsh_nala
     else
         echo -e "${red}Nala requires zsh to be installed${plain}"
