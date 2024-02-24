@@ -13,6 +13,9 @@ plain=$(tput sgr0)  # Reset color
 
 divider="*********************************************************************"
 
+# Get the user's country code
+country=$(curl -s https://ipapi.co/country/)
+
 
 # Function to display error messages and exit
 error_exit() {
@@ -41,44 +44,129 @@ detect_system() {
 
 install_zsh_nala() {
     # Install zsh and oh-my-zsh
-    apt-get install -y zsh wget curl git
-    sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    apt-get update && apt-get install -y zsh wget curl git nano
 
-    # Source the zshrc file to apply the changes
-    source ~/.zshrc
+    echo -e "${divider}"
+    echo -e "${magenta}Installing oh-my-zsh...${plain}"
+    echo -e "${divider}"
+
+    # Check if oh-my-zsh is already installed
+    if [ -d ~/.oh-my-zsh ]; then
+        echo -e "${green}[+] oh-my-zsh is already installed.${plain}"
+    else
+        echo -e "${cyan}[-] oh-my-zsh is not installed.${plain}"
+        # if user is in China mainland, India, or Russia, use the mirror site
+        if [[ "$country" == "CN" ]] || [[ "$country" == "IN" ]] || [[ "$country" == "RU" ]]; then
+            echo -e "${cyan}[-] You are in $country, using mirror site to download oh-my-zsh.${plain}"
+            sh -c "$(curl -fsSL https://install.ohmyz.sh/)" "" --unattended
+        else
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        fi
+
+        # Install oh-my-zsh
+        if [ $? -eq 0 ]; then
+            echo -e "${green}[+] Successfully installed oh-my-zsh.${plain}"
+        else
+            echo -e "${red}[-] Failed to install oh-my-zsh.${plain}"
+            error_exit "install_oh_my_zsh"
+        fi
+    fi
 
     # Install "powerlevel10k/powerlevel10k" theme
     # Remeber to install fonts "MesloLGS NF"
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/powerlevel10k
-    echo 'source ~/powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
-    # Get theme setting from preset
-    wget -O ~/.p10k.zsh https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/.p10k.zsh
+    echo -e "${divider}"
+    echo -e "${magenta}Installing Powerlevel10k theme...${plain}"
+    echo -e "${divider}"
 
-    # Set default shell to zsh, default editor to nano
-    chsh -s /bin/zsh
-    apt-get install -y nano
-    update-alternatives --install /usr/bin/editor editor /usr/bin/nano 100
-    update-alternatives --set editor /usr/bin/nano
+    # Check if Powerlevel10k theme is already installed
+    if [ -d ~/.oh-my-zsh/custom/themes/powerlevel10k ]; then
+        echo -e "${green}[+] Powerlevel10k theme is already installed.${plain}"
+    else
+        git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
 
-    git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+        # Get theme setting from preset
+        curl -o ~/.p10k.zsh https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/zsh/.p10k.zsh
 
-    # Active Plugins
-    NEW_PLUGINS="plugins=(\
-      git\
-      command-not-found\
-      cp\
-      extract\
-      gitignore\
-      safe-paste\
-      zsh-autosuggestions\
-      zsh-syntax-highlighting\
-    )"
-    sed -i '' '/^plugins=(/,/)/c\
-    '"$NEW_PLUGINS"'' ~/.zshrc
+        # Check file exist
+        if [ -f ~/.p10k.zsh ]; then
+            echo -e "${green}[+] Successfully installed Powerlevel10k theme.${plain}"
+        else
+            echo -e "${red}[-] Failed to install Powerlevel10k theme.${plain}"
+            error_exit "install_theme_powerlevel10k"
+        fi
+    fi
 
-    # Source the zshrc file to apply the changes
-    source ~/.zshrc
+
+    # Install plugins
+    echo -e "${divider}"
+    echo -e "${magenta}Installing plugins...${plain}"
+    echo -e "${divider}"
+
+    # Check git lobal config for LF
+    if [ "$(git config --global core.autocrlf)" == "input" ]; then
+        echo -e "${green}[+] LF for git newline is already set.${plain}"
+    else
+        echo -e "${cyan}[-] LF for git newline is not set.${plain}"
+        git config --global core.autocrlf input
+        echo -e "${green}[+] Successfully set LF for git newline.${plain}"
+    fi
+    
+    if [ "$(git config --global core.eol)" == "lf" ]; then
+        echo -e "${green}[+] LF for git eol is already set.${plain}"
+    else
+        echo -e "${cyan}[-] LF for git eol is not set.${plain}"
+        git config --global core.eol lf
+        echo -e "${green}[+] Successfully set LF for git eol.${plain}"
+    fi
+
+    # Install zsh-autosuggestions
+    if [ -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions ]; then
+        echo -e "${green}[+] zsh-autosuggestions is already installed.${plain}"
+    else
+        git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+        # Check if file cloned successfully by check the file exist
+        if [ -f ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+            echo -e "${green}[+] Successfully installed zsh-autosuggestions.${plain}"
+        else
+            echo -e "${red}[-] Failed to install zsh-autosuggestions.${plain}"
+            error_exit "install_plugins"
+        fi
+    fi
+
+    # Install zsh-syntax-highlighting
+    if [ -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting ]; then
+        echo -e "${green}[+] zsh-syntax-highlighting is already installed.${plain}"
+    else
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+        # Check if file cloned successfully by check the file exist
+        if [ -f ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+            echo -e "${green}[+] Successfully installed zsh-syntax-highlighting.${plain}"
+        else
+            echo -e "${red}[-] Failed to install zsh-syntax-highlighting.${plain}"
+            error_exit "install_plugins"
+        fi
+    fi
+
+    echo -e "${divider}"
+    echo -e "${magenta}Switching .zshrc...${plain}"
+    echo -e "${divider}"
+
+    # Backup the default .zshrc
+    if [ -f ~/.zshrc ]; then
+        mv ~/.zshrc ~/.zshrc.bak
+        # Replace the default .zshrc with the custom .zshrc
+        curl -o ~/.zshrc https://raw.githubusercontent.com/ZL-Asica/web-cdn/master/zsh/.zshrc
+        echo -e "${green}[+] Successfully switched .zshrc.${plain}"
+    else
+        echo -e "${red}[-] Failed to switch .zshrc.${plain}"
+        error_exit "switch_zshrc"
+    fi
+
+    # Set the default shell to zsh
+    chsh -s $(which zsh)
+
+    # Restart the shell with zsh
+    exec zsh
 
     # Install Nala package manager
     echo 'deb http://deb.volian.org/volian/ scar main' | tee /etc/apt/sources.list.d/nala.list
@@ -246,6 +334,16 @@ openssh_settings() {
     ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key < /dev/null
     ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_rsa_key < /dev/null
 
+    # Set system only can access by SSH keys, disable password login
+    echo -e "${cyan}[+] Disabling password authentication for SSH${plain}"
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+    # Check if the line is already commented out
+    if grep -q "PasswordAuthentication no" /etc/ssh/sshd_config; then
+        echo -e "${green}[+] Password authentication for SSH is already disabled${plain}"
+    else
+        echo -e "${red}[-] Failed to disable password authentication for SSH${plain}"
+    fi
+
     # Set the correct permissions for the SSH keys
     chmod 700 /etc/ssh
     chmod 600 /etc/ssh/ssh_host_ed25519_key /etc/ssh/ssh_host_rsa_key
@@ -367,3 +465,5 @@ EOF
 
 echo -e "${magenta}Server setup script (basic) - ZL Asica\n"
 echo -e "https://github.com/ZL-Asica/server-setup-scripts${plain}\n" # Default welcome message
+
+main
