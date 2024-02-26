@@ -137,10 +137,14 @@ android_studio_install() {
         # Set the environment variable to the path
         echo 'export ANDROID_HOME="$HOME/android-studio"' >> ~/.zshrc
         echo 'export PATH=$PATH:"$ANDROID_HOME/cmdline-tools/latest/bin"' >> ~/.zshrc
+        echo 'export PATH=$PATH:"$ANDROID_HOME/emulator"' >> ~/.zshrc
+        echo 'export PATH=$PATH:"$ANDROID_HOME/platform-tools"' >> ~/.zshrc
         # Activate the changes
         source ~/.zshrc
         # Install the latest platform tools
         sdkmanager "platform-tools" "build-tools;30.0.3" "platforms;android-30"
+        sdkmanager "system-images;android-30;google_apis;arm64-v8a"
+        avdmanager create avd -n default -k "system-images;android-30;google_apis;arm64-v8a" --abi google_apis/arm64-v8a
         # Config flutter
         flutter config --android-sdk ~/android-studio
         # Accept the licenses
@@ -208,10 +212,11 @@ main() {
     echo -e "${blue}This script will install the following (if not installed yet):${plain}"
     echo -e "${cyan}1. Xcode${plain}"
     echo -e "${cyan}2. Homebrew${plain}"
-    echo -e "${cyan}3. Flutter${plain}"
-    echo -e "${cyan}4. openjdk@17${plain}"
-    echo -e "${cyan}5. Android Studio Command Line Tools${plain}"
-    echo -e "${cyan}6. Andrios SDK - platform-tools, build-tools;30.0.3, platforms;android-30${plain}"
+    echo -e "${cyan}3. rbenv, ruby@3.3.0, cocoapods${plain}"
+    echo -e "${cyan}4. Flutter${plain}"
+    echo -e "${cyan}5. openjdk@17${plain}"
+    echo -e "${cyan}6. Android Studio Command Line Tools${plain}"
+    echo -e "${cyan}7. Andrios SDK - platform-tools, build-tools;30.0.3, platforms;android-30${plain}"
     echo -e "${divider}"
     read -p "$(echo -e "${blue}Do you want to continue? (y/n)${plain}")" -n 1 -r
 
@@ -221,6 +226,9 @@ main() {
     # Check for Homebrew
     homebrew_install
 
+    # Check for rbenv, ruby@3.3.0, cocoapods
+    ruby_install
+
     # Install Flutter Through fvm
     flutter_install
 
@@ -229,6 +237,9 @@ main() {
 
     # Install Android Studio Command Line Tools
     android_studio_install
+
+    # Xcode setup
+    xcode_setup
 
     # Ending message
     ending_message
