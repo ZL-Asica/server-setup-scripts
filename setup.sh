@@ -165,18 +165,14 @@ install_zsh_nala() {
     # Set the default shell to zsh
     chsh -s $(which zsh)
 
-    # Restart the shell with zsh
-    exec zsh
-
     # Install Nala package manager
     echo 'deb http://deb.volian.org/volian/ scar main' | tee /etc/apt/sources.list.d/nala.list
     wget -qO - http://deb.volian.org/volian/scar.key | apt-key add -
     apt-get update
     apt-get install nala -y
 
-    # auto-fetch
-    nala fetch --auto -y
-    nala update && nala upgrade -y
+    # Update and upgrade the system with nala
+    sudo nala update && nala upgrade -y
 }
 
 
@@ -184,8 +180,9 @@ sys_settings() {
     # Set the timezone based on ip and enable NTP
     timezone=$(curl -s https://ipapi.co/timezone)
     echo -e "${cyan}[+]Setting timezone to $timezone${plain}"
-    nala install -y timedatectl ntp
+    nala install -y chrony
     timedatectl set-timezone $timezone
+    # Enable NTP from chrony
     timedatectl set-ntp true
 
     # Set swap if it is not already set
@@ -287,14 +284,14 @@ common_packages_install() {
 
     # Install common packages
     #  eza, net-tools, htop, nala-transport-https, ca-certificates, software-properties-common, build-essential, libelf-dev
-    nala update && nala upgrade -y
-    nala install -y gpg
-    mkdir -p /etc/apt/keyrings
-    wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
-    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | tee /etc/apt/sources.list.d/gierens.list
-    chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
-    nala update
-    nala install -y eza net-tools htop ca-certificates software-properties-common build-essential libelf-dev openssh-server
+    sudo nala update && sudo nala upgrade -y
+    sudo nala install -y gpg
+    sudo mkdir -p /etc/apt/keyrings
+    wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+    sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+    sudo nala update
+    sudo nala install -y eza net-tools htop ca-certificates software-properties-common build-essential libelf-dev openssh-server
 
 
     # Docker and Docker Compose
@@ -302,8 +299,8 @@ common_packages_install() {
         echo -e "${cyan}[+] Installing Docker and Docker Compose${plain}"
         if [ "$ID" == "debian" ]; then
             for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do apt-get remove $pkg; done
-            nala update
-            install -m 0755 -d /etc/apt/keyrings
+            sudo nala update
+            sudo install -m 0755 -d /etc/apt/keyrings
             curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
             chmod a+r /etc/apt/keyrings/docker.asc
             # Add the repository to Apt sources:
@@ -313,8 +310,8 @@ common_packages_install() {
                 tee /etc/apt/sources.list.d/docker.list > /dev/null
         elif [ "$ID" == "ubuntu" ]; then
             for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do apt-get remove $pkg; done
-            nala update
-            install -m 0755 -d /etc/apt/keyrings
+            sudo nala update
+            sudo install -m 0755 -d /etc/apt/keyrings
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
             chmod a+r /etc/apt/keyrings/docker.asc
             # Add the repository to Apt sources:
@@ -323,21 +320,21 @@ common_packages_install() {
                 $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
                 tee /etc/apt/sources.list.d/docker.list > /dev/null
         fi
-        nala update
-        nala install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        sudo nala update
+        sudo nala install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     fi
     
-    nala autoremove -y
+    sudo nala autoremove -y
 }
 
 
 
 openssh_settings() {
-    systemctl enable ssh
-    systemctl start ssh
+    sudo systemctl enable ssh
+    sudo systemctl start ssh
     # Generate SSH keys for the server at /etc/ssh
-    ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key < /dev/null
-    ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_rsa_key < /dev/null
+    sudo ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key < /dev/null
+    sudo ssh-keygen -t rsa -b 4096 -f /etc/ssh/ssh_host_rsa_key < /dev/null
 
     # ask user to disable password authentication
     disable_password_auth="n"
@@ -345,7 +342,7 @@ openssh_settings() {
 
     if [ "${disable_password_auth,,}" == "y" ]; then
         echo -e "${cyan}[+] Disabling password authentication for SSH${plain}"
-        sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+        sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
         # Check if the line is already commented out
         if grep -q "PasswordAuthentication no" /etc/ssh/sshd_config; then
             echo -e "${green}[+] Password authentication for SSH is already disabled${plain}"
@@ -357,11 +354,11 @@ openssh_settings() {
     fi
 
     # Set the correct permissions for the SSH keys
-    chmod 700 /etc/ssh
-    chmod 600 /etc/ssh/ssh_host_ed25519_key /etc/ssh/ssh_host_rsa_key
-    chmod 644 /etc/ssh/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_rsa_key.pub
+    sudo chmod 700 /etc/ssh
+    sudo chmod 600 /etc/ssh/ssh_host_ed25519_key /etc/ssh/ssh_host_rsa_key
+    sudo chmod 644 /etc/ssh/ssh_host_ed25519_key.pub /etc/ssh/ssh_host_rsa_key.pub
     # Restart the SSH service to apply the changes
-    systemctl restart ssh
+    sudo systemctl restart ssh
     # Reload ufw to apply the changes
     sudo ufw reload
 
@@ -452,6 +449,9 @@ main() {
 
     # Ending info
     ending_info
+
+    # Restart the shell with zsh
+    exec zsh
 }
 
 
@@ -462,8 +462,14 @@ main() {
 # Move focus to the top of the terminal without clearing the screen
 printf '\033c'
 
-# Ensure the script is run as root
-[[ $EUID -ne 0 ]] && error_exit "error_root"
+# Check if the user running the script is the same as the current user
+# root can run as root, other users can run as themselves, but not as root
+if [ "$EUID" -ne "$(id -u)" ]; then
+    echo -e "${red}Please run the script as the user you want to set up the server for.${plain}"
+    echo -e "${red}The script will not allow you to run as root.${plain}"
+    exit 1
+fi
+
 
 # Welcome message
 echo "" # New line for better readability
