@@ -17,7 +17,7 @@ divider="*********************************************************************"
 error_exit() {
     local msg_key="$1"
     echo -e "${red}${messages[${lang}_$msg_key]}${plain}" >&2
-    echo -e "${red}If you encounter any issues, \nlease report them at: https://github.com/ZL-Asica/server-setup-scripts/issues${plain}" >&2
+    echo -e "${red}[---] If you encounter any issues, \nlease report them at: https://github.com/ZL-Asica/server-setup-scripts/issues${plain}" >&2
     exit 1
 }
 
@@ -25,14 +25,14 @@ error_exit() {
 # Check Xcode
 xcode_install() {
     if test ! $(which xcode-select); then
-        echo -e "${blue}Installing Xcode...${plain}"
+        echo -e "${blue}[+] Installing Xcode...${plain}"
         xcode-select --install
         # Wait for the installation to complete
         until test $(which xcode-select); do
             sleep 5
         done
     else
-        echo -e "${green}Xcode already installed. Skipping...${plain}"
+        echo -e "${green}[+++] Xcode already installed. Skipping...${plain}"
     fi
 }
 
@@ -40,14 +40,14 @@ xcode_install() {
 # Check homebrew
 homebrew_install() {
     if test ! $(which brew); then
-        echo -e "${blue}Installing Homebrew...${plain}"
+        echo -e "${blue}[+] Installing Homebrew...${plain}"
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         # Add homebrew to the path
         echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
         # Activate the changes
         source ~/.zshrc
     else
-        echo -e "${green}Homebrew already installed. Skipping...${plain}"
+        echo -e "${green}[+++] Homebrew already installed. Skipping...${plain}"
     fi
 }
 
@@ -56,14 +56,14 @@ homebrew_install() {
 flutter_install() {
     # Check flutter first
     if test ! $(which flutter); then
-        echo -e "${blue}Installing Flutter...${plain}"
+        echo -e "${blue}[+] Installing Flutter...${plain}"
         # Check fvm
         if test ! $(which fvm); then
-            echo -e "${blue}Installing fvm...${plain}"
+            echo -e "${blue}[+] Installing fvm(Flutter version manager)...${plain}"
             # Install fvm
             brew install fvm
         else
-            echo -e "${green}fvm already installed. Skipping...${plain}"
+            echo -e "${green}[+++] fvm already installed. Skipping...${plain}"
         fi
         fvm install stable
         # Set the global flutter version
@@ -73,7 +73,7 @@ flutter_install() {
         # Activate the changes
         source ~/.zshrc
     else
-        echo -e "${green}Flutter already installed. Skipping...${plain}"
+        echo -e "${green}[+++] Flutter already installed. Skipping...${plain}"
     fi
 }
 
@@ -81,7 +81,7 @@ flutter_install() {
 # Install openjdk@17
 openjdk_install() {
     # directly install without check
-    echo -e "${blue}Installing openjdk@17...${plain}"
+    echo -e "${blue}[+] Installing openjdk@17...${plain}"
     brew install openjdk@17
     # Add openjdk to the path
     echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
@@ -94,7 +94,7 @@ openjdk_install() {
 # Install Android Studio Command Line Tools
 android_studio_install() {
     if test ! $(which sdkmanager); then
-        echo -e "${blue}Installing Android Studio Command Line Tools...${plain}"
+        echo -e "${blue}[+] Installing Android Studio Command Line Tools...${plain}"
         # Download latest version into $HOME/
         curl -o ~/android-studio.zip https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip
         # Create the directory
@@ -115,7 +115,7 @@ android_studio_install() {
         # Accept the licenses
         flutter doctor --android-licenses
     else
-        echo -e "${green}Android Studio Command Line Tools already installed. Skipping...${plain}"
+        echo -e "${green}[+++] Android Studio Command Line Tools already installed. Skipping...${plain}"
     fi
 }
 
@@ -130,6 +130,7 @@ ending_message() {
     echo -e "${divider}"
     # Remind them to install Visual Studio Code with the Flutter extension
     echo -e "${green}Please install ${magenta}Visual Studio Code${green} with the ${magenta}Flutter extension.${plain}"
+    echo -e "${blue}If you have Visual Studio Code opened, please restart it.${plain}"
     echo -e "${green}https://code.visualstudio.com/${plain}"
     echo -e "${divider}"
     # Give a star
