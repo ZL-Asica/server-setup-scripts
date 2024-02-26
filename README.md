@@ -1,4 +1,4 @@
-# Server Setup Script - Linux （服务器配置脚本）
+# Environment Setup Script - Linux/macOS （服务器配置脚本）
 
 [中文README请点击这里](https://github.com/ZL-Asica/server-setup-scripts/blob/main/README_CN.md)
 
@@ -28,6 +28,14 @@ Use **curl**
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_oh-my-zsh.sh)"
+```
+
+### React Native
+
+Use **curl**
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_react-native.sh)"
 ```
 
 ### Flutter

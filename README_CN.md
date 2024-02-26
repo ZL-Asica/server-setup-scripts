@@ -1,8 +1,8 @@
-# 服务器配置脚本 - Linux
+# 环境配置脚本 - Linux/macOS
 
 ## 需求
 
-仅为Debian/Ubuntu设计。CentOS/RHEL/Fedora请不要使用，暂不支持。
+仅为Debian/Ubuntu/macOS设计。CentOS/RHEL/Fedora请不要使用，暂不支持。
 
 ## 使用
 
@@ -29,7 +29,15 @@ sudo bash -c "$(wget -O- https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scrip
 使用 **curl**
 
 ```bash
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/mac_oh-my-zsh.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_oh-my-zsh.sh)"
+```
+
+### React Native
+
+使用 **curl**
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_react-native.sh)"
 ```
 
 ### Flutter
@@ -37,10 +45,5 @@ bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@
 使用 **curl**
 
 ```bash
-### Flutter
-
-Use **curl**
-
-```bash
-bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/mac_flutter.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_flutter.sh)"
 ```
