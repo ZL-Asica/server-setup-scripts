@@ -52,6 +52,37 @@ homebrew_install() {
 }
 
 
+# rbenv, ruby@3.3.0, cocoapods
+ruby_install() {
+    # Check rbenv
+    if test ! $(which rbenv); then
+        echo -e "${blue}[+] Installing rbenv...${plain}"
+        brew install rbenv
+        # Add rbenv to the path
+        echo 'eval "$(rbenv init -)"' >> ~/.zshrc
+        # Activate the changes
+        source ~/.zshrc
+    else
+        echo -e "${green}[+++] rbenv already installed. Skipping...${plain}"
+    fi
+    # Check ruby
+    if test ! $(which ruby); then
+        echo -e "${blue}[+] Installing ruby@3.3.0...${plain}"
+        rbenv install 3.3.0
+        rbenv global 3.3.0
+    else
+        echo -e "${green}[+++] ruby@3.3.0 already installed. Skipping...${plain}"
+    fi
+    # Check cocoapods
+    if test ! $(which pod); then
+        echo -e "${blue}[+] Installing cocoapods...${plain}"
+        gem install cocoapods
+    else
+        echo -e "${green}[+++] cocoapods already installed. Skipping...${plain}"
+    fi
+}
+
+
 # Install Flutter Through fvm
 flutter_install() {
     # Check flutter first
