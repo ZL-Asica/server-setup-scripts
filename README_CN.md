@@ -22,10 +22,25 @@ sudo bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scr
 sudo bash -c "$(wget -O- https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/setup.sh)"
 ```
 
-## macOS oh-my-zsh （请不要使用root/sudo）
+## macOS（请不要使用root/sudo）
+
+### oh-my-zsh
 
 使用 **curl**
 
 ```bash
 bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/mac_oh-my-zsh.sh)"
+```
+
+### Flutter
+
+使用 **curl**
+
+```bash
+### Flutter
+
+Use **curl**
+
+```bash
+bash -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scripts@main/mac_flutter.sh)"
 ```
