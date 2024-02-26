@@ -120,6 +120,26 @@ android_studio_install() {
 }
 
 
+# Xcode setup
+xcode_setup() {
+    echo -e "${blue}[+] Setting up Xcode...You will need to enter your password.${plain}"
+    # check if Xcode is installed and set the path
+    if test ! $(which xcodebuild); then
+        sudo sh -c 'xcode-select -s /Applications/Xcode.app/Contents/Developer && xcodebuild -runFirstLaunch'
+    fi
+    # Check the first launch
+    if test ! -d /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform; then
+        xcodebuild -downloadPlatform iOS
+    fi
+    # wait for the installation to complete
+    until test -d /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform; do
+        sleep 5
+    done
+    # Accept the Xcode license
+    sudo xcodebuild -license accept
+}
+
+
 # Endding message
 ending_message() {
     # Run flutter doctor
