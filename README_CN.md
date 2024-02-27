@@ -32,6 +32,14 @@ sudo bash -c "$(wget -O- https://cdn.jsdelivr.net/gh/ZL-Asica/server-setup-scrip
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_oh-my-zsh.sh)"
 ```
 
+### Expo [expo.dev](https://expo.dev/)
+
+Use **curl**
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZL-Asica/server-setup-scripts/main/mac_expo.sh)"
+```
+
 ### React Native
 
 使用 **curl**
