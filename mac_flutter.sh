@@ -142,9 +142,9 @@ android_studio_install() {
         # Activate the changes
         source ~/.zshrc
         # Install the latest platform tools
-        sdkmanager "platform-tools" "build-tools;30.0.3" "platforms;android-30"
-        sdkmanager "system-images;android-30;google_apis;arm64-v8a"
-        avdmanager create avd -n default -k "system-images;android-30;google_apis;arm64-v8a" --abi google_apis/arm64-v8a
+        sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34"
+        sdkmanager "system-images;android-34;google_apis;arm64-v8a"
+        avdmanager create avd -n android-34- -k "system-images;android-34;google_apis;arm64-v8a" --abi google_apis/arm64-v8a
         # Config flutter
         flutter config --android-sdk ~/android-studio
         # Accept the licenses
@@ -157,6 +157,13 @@ android_studio_install() {
 
 # Xcode setup
 xcode_setup() {
+    # Check ios-deploy
+    if test ! $(which ios-deploy); then
+        echo -e "${blue}[+] Installing ios-deploy...${plain}"
+        brew install ios-deploy
+    else
+        echo -e "${green}[+++] ios-deploy already installed. Skipping...${plain}"
+    fi
     echo -e "${blue}[+] Setting up Xcode...You will need to enter your password.${plain}"
     # check if Xcode is installed and set the path
     if test ! $(which xcodebuild); then

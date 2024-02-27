@@ -102,51 +102,39 @@ ruby_install() {
 }
 
 
-# Install openjdk@17
+# Install zulu17
 openjdk_install() {
-    # directly install without check
-    echo -e "${blue}[+] Installing openjdk@17...${plain}"
-    brew install openjdk@17
-    # Add openjdk to the path
-    echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
-    echo 'export JAVA_HOME="/opt/homebrew/opt/openjdk@17"' >> ~/.zshrc
-    # Activate the changes
-    source ~/.zshrc
-}
+    # Attempt to extract the major Java version number
+    if ! type java > /dev/null 2>&1; then
+        java_version=0 # java not found
+    else
+        # Extracts version number and trims potential leading "1."
+        java_version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk -F'.' '{print ($1 == 1 ? $2 : $1)}')
+    fi
 
-
-# Install Android Studio Command Line Tools
-android_studio_install() {
-    if test ! $(which sdkmanager); then
-        echo -e "${blue}[+] Installing Android Studio Command Line Tools...${plain}"
-        # Download latest version into $HOME/
-        curl -o ~/android-studio.zip https://dl.google.com/android/repository/commandlinetools-mac-11076708_latest.zip
-        # Create the directory
-        mkdir -p ~/android-studio/cmdline-tools/latest/
-        # Unzip the file contents into the directory
-        unzip ~/android-studio.zip -d ~/android-studio/cmdline-tools/latest/
-        # Delete the zip file
-        rm ~/android-studio.zip
-        # Set the environment variable to the path
-        echo 'export ANDROID_HOME="$HOME/android-studio"' >> ~/.zshrc
-        echo 'export PATH=$PATH:"$ANDROID_HOME/cmdline-tools/latest/bin"' >> ~/.zshrc
-        echo 'export PATH=$PATH:"$ANDROID_HOME/emulator"' >> ~/.zshrc
-        echo 'export PATH=$PATH:"$ANDROID_HOME/platform-tools"' >> ~/.zshrc
-
+    # Check if Java version is outside the 17-20 range
+    if [[ "$java_version" -lt 17 ]] || [[ "$java_version" -gt 20 ]]; then
+        echo -e "${blue}[+] Installing openjdk@17...${plain}"
+        brew install openjdk@17
+        # Add openjdk to the path
+        echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"' >> ~/.zshrc
         # Activate the changes
         source ~/.zshrc
-        # Install the latest platform tools
-        sdkmanager "platform-tools" "build-tools;30.0.3" "platforms;android-30"
-        sdkmanager "system-images;android-30;google_apis;arm64-v8a"
-        avdmanager create avd -n default -k "system-images;android-30;google_apis;arm64-v8a" --abi google_apis/arm64-v8a
     else
-        echo -e "${green}[+++] Android Studio Command Line Tools already installed. Skipping...${plain}"
+        echo -e "${green}[+++] Java version is within 17-20. Skipping installation of openjdk@17.${plain}"
     fi
 }
 
 
 # Xcode setup
 xcode_setup() {
+    # Check ios-deploy
+    if test ! $(which ios-deploy); then
+        echo -e "${blue}[+] Installing ios-deploy...${plain}"
+        brew install ios-deploy
+    else
+        echo -e "${green}[+++] ios-deploy already installed. Skipping...${plain}"
+    fi
     echo -e "${blue}[+] Setting up Xcode...You will need to enter your password.${plain}"
     # check if Xcode is installed and set the path
     if test ! $(which xcodebuild); then
@@ -172,10 +160,15 @@ ending_message() {
     echo -e "${green}React Native enviroment setup completed!${plain}"
     echo -e "${green}Please ${magenta}restart your terminal${green} to apply the changes.${plain}"
     echo -e "${divider}"
-    # Remind them to install Visual Studio Code with the Flutter extension
-    echo -e "${green}Please install ${magenta}Visual Studio Code${green} with the ${magenta}Flutter extension.${plain}"
+    # Remind them to install Visual Studio Code with the RNT extension
+    echo -e "${green}Please install ${magenta}Visual Studio Code${green} with the ${magenta}React Native Tools${green} extension.${plain}"
+    echo -e "${blue}https://marketplace.visualstudio.com/items?itemName=msjsdiag.vscode-react-native${plain}"
     echo -e "${blue}If you have Visual Studio Code opened, please restart it.${plain}"
     echo -e "${green}https://code.visualstudio.com/${plain}"
+    echo -e "${divider}"
+    # Remind them to install Android Studio through JetBrains Toolbox
+    echo -e "${green}Please install ${magenta}Android Studio${green} through ${magenta}JetBrains Toolbox${green}.${plain}"
+    echo -e "${blue}https://www.jetbrains.com/toolbox-app/download/${plain}"
     echo -e "${divider}"
     # Give a star
     echo -e "${green}If you find this script helpful, please give it a star on GitHub.${plain}"
