@@ -67,6 +67,8 @@ node_watchman_install() {
         source ~/.zshrc
         # Install the latest LTS version of node
         nvm install --lts
+        # Add lts to the path
+        echo 'nvm use --lts' >> ~/.zshrc
         # enable corepack for yarn
         corepack enable
     else
